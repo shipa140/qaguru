@@ -1,0 +1,18 @@
+import { expect, test } from "../../src/fixtures/index.js";
+
+test.describe(
+  "API: доступность сервиса",
+  { tag: ["@api", "@heartbeat"] },
+  () => {
+    test(
+      "Проверка доступности сервиса через heartbeat",
+      { tag: ["@get", "@positive"] },
+      async ({ app, challenger }) => {
+        const result = await app.heartbeat.get(challenger);
+
+        expect(result.status).toBe(204);
+        expect(result.body).toBeNull();
+      },
+    );
+  },
+);

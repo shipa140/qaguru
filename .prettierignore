@@ -1,0 +1,9 @@
+node_modules/
+allure-results/
+test-results/
+playwright-report/
+blob-report/
+qa_run_349/
+docs/images/
+package-lock.json
+.env

@@ -1,0 +1,147 @@
+name: Playwright tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      ALLURE_JOB_RUN_ID:
+        description: Job Run ID supplied by Allure TestOps
+        required: false
+        type: string
+      ALLURE_USERNAME:
+        description: User supplied by Allure TestOps
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pull-request:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: playwright-pr-${{ github.run_id }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            test-results/
+            playwright-report/
+            allure-results/
+
+  testops:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Set up allurectl
+        uses: allure-framework/setup-allurectl@2d89ee0b7ba2f59dbe9849b6df5763cab78e14db # v1
+        with:
+          allure-endpoint: ${{ secrets.ALLURE_ENDPOINT }}
+          allure-project-id: ${{ secrets.ALLURE_PROJECT_ID }}
+          allure-token: ${{ secrets.ALLURE_TOKEN }}
+          allurectl-version: 2.21.1
+
+      - name: Authenticate in Allure TestOps
+        run: allurectl auth login
+        env:
+          ALLURE_ENDPOINT: ${{ secrets.ALLURE_ENDPOINT }}
+          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+
+      - name: Run tests and upload results to Allure TestOps
+        run: allurectl watch -- npx playwright test
+        env:
+          ALLURE_ENDPOINT: ${{ secrets.ALLURE_ENDPOINT }}
+          ALLURE_PROJECT_ID: ${{ secrets.ALLURE_PROJECT_ID }}
+          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+          ALLURE_RESULTS: allure-results
+          ALLURE_LAUNCH_NAME: "QA.GURU Playwright #${{ github.run_number }}"
+          ALLURE_LAUNCH_TAGS: playwright,realworld,apichallenges,github-actions
+          ALLURE_JOB_RUN_ID: ${{ inputs.ALLURE_JOB_RUN_ID }}
+          ALLURE_USERNAME: ${{ inputs.ALLURE_USERNAME }}
+
+      - name: Expose Allure TestOps launch URL
+        if: success()
+        run: allurectl job-run env | grep '^ALLURE_LAUNCH_URL=' >> "$GITHUB_ENV"
+        env:
+          ALLURE_ENDPOINT: ${{ secrets.ALLURE_ENDPOINT }}
+          ALLURE_PROJECT_ID: ${{ secrets.ALLURE_PROJECT_ID }}
+          ALLURE_TOKEN: ${{ secrets.ALLURE_TOKEN }}
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: playwright-testops-${{ github.run_id }}
+          if-no-files-found: ignore
+          retention-days: 14
+          path: |
+            test-results/
+            playwright-report/
+            allure-results/
+
+      - name: Notify Telegram
+        if: always()
+        run: npm run notify:telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ secrets.TELEGRAM_MESSAGE_THREAD_ID }}
+          CI_JOB_STATUS: ${{ job.status }}
