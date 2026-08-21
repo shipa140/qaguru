@@ -41,10 +41,14 @@ export class ArticlePage {
     return test.step("UI: удаление комментария", async () => {
       await this.#open(slug);
       const commentLocator = this.comment(body);
-      await commentLocator.waitFor({ state: "visible" });
+      const deleteResponse = this.page.waitForResponse(
+        (response) =>
+          response.url().includes(`/api/articles/${slug}/comments/`) &&
+          response.request().method() === "DELETE",
+      );
       this.page.once("dialog", (dialog) => dialog.accept());
       await commentLocator.getByRole("button").click();
-      await commentLocator.waitFor({ state: "hidden" });
+      await deleteResponse;
     });
   }
 

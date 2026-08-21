@@ -26,7 +26,6 @@ export class NavbarPage {
     return test.step("UI: выход пользователя", async () => {
       await this.userMenu(username).click();
       await this.navbar.getByRole("link", { name: "Logout" }).click();
-      await this.loginLink().waitFor({ state: "visible" });
     });
   }
 }

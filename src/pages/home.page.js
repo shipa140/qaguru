@@ -11,11 +11,9 @@ export class HomePage {
     this.previousPageButton = page.getByRole("button", {
       name: "Previous page",
     });
-    this.firstPopularTag = page
+    this.popularTags = page
       .getByRole("heading", { name: "Popular Tags" })
-      .locator("..")
-      .getByRole("button")
-      .first();
+      .locator("..");
   }
 
   tagFeedTab(tag) {
@@ -27,6 +25,10 @@ export class HomePage {
 
   articleTitle(title) {
     return this.page.getByRole("heading", { name: title, exact: true });
+  }
+
+  popularTag(tag) {
+    return this.popularTags.getByRole("button", { name: tag, exact: true });
   }
 
   async openYourFeed() {
@@ -48,8 +50,7 @@ export class HomePage {
   async paginateGlobalFeed() {
     return test.step("UI: переход на следующую страницу ленты", async () => {
       await this.#openGlobalFeed();
-      await this.firstArticleTitle.waitFor({ state: "visible" });
-      const before = await this.firstArticleTitle.textContent();
+      const firstPageTitle = await this.firstArticleTitle.innerText();
       const response = this.page.waitForResponse(
         (candidate) =>
           candidate.url().includes("/api/articles") &&
@@ -58,46 +59,41 @@ export class HomePage {
       );
       await this.nextPageButton.click();
       await response;
-      await this.page.waitForFunction(
-        (titleBeforePagination) =>
-          globalThis.document.querySelector(".article-preview h1")
-            ?.textContent !== titleBeforePagination,
-        before,
-      );
 
-      return {
-        before,
-        after: await this.firstArticleTitle.textContent(),
-      };
+      return firstPageTitle;
     });
   }
 
-  async filterGlobalFeedByPopularTag() {
-    return test.step("UI: фильтрация ленты по популярному тегу", async () => {
+  async filterGlobalFeedByTag(tag) {
+    return test.step("UI: фильтрация ленты по собственному тегу", async () => {
       await this.#openGlobalFeed();
-      const tag = (await this.firstPopularTag.textContent())?.trim();
-      if (!tag) {
-        throw new Error("A popular tag was not found on the home page.");
-      }
+      const response = this.page.waitForResponse((candidate) => {
+        const url = new URL(candidate.url());
 
-      const response = this.page.waitForResponse(
-        (candidate) =>
-          candidate.url().includes("/api/articles") &&
-          candidate.url().includes("tag=") &&
-          candidate.status() === 200,
-      );
-      await this.firstPopularTag.click();
+        return (
+          url.pathname === "/api/articles" &&
+          url.searchParams.get("tag") === tag &&
+          candidate.request().method() === "GET" &&
+          candidate.status() === 200
+        );
+      });
+      await this.popularTag(tag).click();
       await response;
-
-      const tagTab = this.tagFeedTab(tag);
-      await tagTab.waitFor({ state: "visible" });
-
-      return tag;
     });
   }
 
   async #openGlobalFeed() {
+    const response = this.page.waitForResponse((candidate) => {
+      const url = new URL(candidate.url());
+
+      return (
+        url.pathname === "/api/articles" &&
+        !url.searchParams.has("tag") &&
+        candidate.request().method() === "GET" &&
+        candidate.status() === 200
+      );
+    });
     await this.page.goto("/#/");
-    await this.globalFeedTab.click();
+    await response;
   }
 }

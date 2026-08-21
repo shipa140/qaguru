@@ -1,4 +1,4 @@
-import { expect, test } from "../../src/fixtures/index.js";
+import { expect, test } from "../../src/index.js";
 
 test.describe(
   "UI: профиль и личная лента",
@@ -32,7 +32,7 @@ test.describe(
     );
 
     test(
-      "Сохранение описания профиля после перезагрузки страницы",
+      "Сохранение нового описания профиля в интерфейсе и API",
       { tag: "@positive" },
       async ({ setupApi, ui, userBuilder }) => {
         const user = userBuilder().build();

@@ -35,8 +35,6 @@ export class ProfilePage {
       );
       await this.followButton(username).click();
       await followResponse;
-      const unfollowButton = this.unfollowButton(username);
-      await unfollowButton.waitFor({ state: "visible" });
     });
   }
 }

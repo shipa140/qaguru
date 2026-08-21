@@ -21,7 +21,6 @@ export class LoginPage {
     return test.step("UI: отклонение входа пользователя", async () => {
       await this.page.goto("/#/login");
       await this.#submit({ email, password });
-      await this.errorMessage.waitFor({ state: "visible" });
     });
   }
 

@@ -24,7 +24,6 @@ export class SettingsPage {
       await this.updateButton.click();
       await updateResponse;
       await this.page.reload();
-      await this.bioInput.waitFor({ state: "visible" });
     });
   }
 }

@@ -22,7 +22,6 @@ export class RegisterPage {
     return test.step("UI: отклонение регистрации пользователя", async () => {
       await this.page.goto("/#/register");
       await this.#submit(user);
-      await this.errorMessage.waitFor({ state: "visible" });
     });
   }
 

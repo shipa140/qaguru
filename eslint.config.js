@@ -4,10 +4,10 @@ export default [
   {
     ignores: [
       "node_modules/**",
-      "qa_run_349/**",
       "test-results/**",
       "playwright-report/**",
       "allure-results/**",
+      "tmp/**",
     ],
   },
   js.configs.recommended,

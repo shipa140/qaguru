@@ -1,11 +1,11 @@
-import { expect, test } from "../../src/fixtures/index.js";
+import { expect, test } from "../../src/index.js";
 
 test.describe(
   "API: доступность сервиса",
   { tag: ["@api", "@heartbeat"] },
   () => {
     test(
-      "Проверка доступности сервиса через heartbeat",
+      "Ответ 204 подтверждает доступность сервиса через heartbeat",
       { tag: ["@get", "@positive"] },
       async ({ app, challenger }) => {
         const result = await app.heartbeat.get(challenger);

@@ -1,8 +1,8 @@
-import { expect, test } from "../../src/fixtures/index.js";
+import { expect, test } from "../../src/index.js";
 
 test.describe("API: чтение задач", { tag: ["@api", "@todos"] }, () => {
   test(
-    "Получение списка задач с корректной структурой",
+    "Получение непустого списка задач с корректной структурой",
     { tag: ["@get", "@positive"] },
     async ({ app, challenger }) => {
       const result = await app.todos.list(challenger);
@@ -21,7 +21,7 @@ test.describe("API: чтение задач", { tag: ["@api", "@todos"] }, () =>
   );
 
   test(
-    "Получение созданной задачи по идентификатору",
+    "Получение созданной задачи по её идентификатору",
     { tag: ["@get", "@positive"] },
     async ({ app, challenger, todoBuilder }) => {
       const todo = todoBuilder().withDoneStatus(true).build();
@@ -45,7 +45,7 @@ test.describe("API: чтение задач", { tag: ["@api", "@todos"] }, () =>
   );
 
   test(
-    "Фильтрация списка по статусу выполнения",
+    "Получение только выполненных задач при фильтрации по статусу",
     { tag: ["@get", "@positive"] },
     async ({ app, challenger, todoBuilder }) => {
       const completed = await app.todos.create(
@@ -71,7 +71,7 @@ test.describe("API: чтение задач", { tag: ["@api", "@todos"] }, () =>
   );
 
   test(
-    "Ответ 404 при запросе несуществующей задачи",
+    "Ответ 404 при запросе задачи с несуществующим идентификатором",
     { tag: ["@get", "@negative"] },
     async ({ app, challenger }) => {
       const result = await app.todos.get(challenger, 999_999_999);
