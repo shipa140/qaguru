@@ -2,7 +2,7 @@
 
 [![Playwright tests](https://github.com/shipa140/qaguru/actions/workflows/tests.yml/badge.svg)](https://github.com/shipa140/qaguru/actions/workflows/tests.yml)
 [![Playwright](https://img.shields.io/badge/Playwright-1.62-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev/)
-[![Allure TestOps](https://img.shields.io/badge/Allure-TestOps-FC6A31)](https://allure.qa.guru/launch/55755)
+[![Allure TestOps](https://img.shields.io/badge/Allure-TestOps-FC6A31)](https://allure.qa.guru/launch/55760)
 
 Масштабируемый Playwright-фреймворк: **15 UI-тестов**
 [RealWorld](https://realworld.qa.guru/) и **17 API-тестов**
@@ -73,8 +73,8 @@ npm run format:check
 
 ## Результаты
 
-- [GitHub Actions: успешный запуск 32/32](https://github.com/shipa140/qaguru/actions/runs/32466190427)
-- [Allure TestOps: запуск №44](https://allure.qa.guru/launch/55755)
+- [GitHub Actions: успешный запуск 32/32](https://github.com/shipa140/qaguru/actions/runs/32482651476)
+- [Allure TestOps: запуск №47](https://allure.qa.guru/launch/55760)
 
 ### GitHub Actions
 
